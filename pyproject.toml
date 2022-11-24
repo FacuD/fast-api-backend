@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "backend-api"
+version = "0.1.0"
+description = ""
+authors = ["FacuD"]
+readme = "README.md"
+packages = [{include = "backend_api"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["all"], version = "^0.86.0"}
+alembic = "^1.8.1"
+python-decouple = "^3.6"
+pathlib = "^1.0.1"
+psycopg2-binary = "^2.9.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

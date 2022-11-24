@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: fast_api.Dockerfile
+    container_name: api
+    command: bash -c "alembic upgrade head && uvicorn app.api:app --host 0.0.0.0 --reload"
+    environment:
+      - DB_CONNSTR:postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres-db:5432/${POSTGRES_DB:-api_backend}
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres-db # For waiting for the database to be ready
+    restart: unless-stopped # Restart the container if it exits
+    links:
+      - postgres-db # For connecting to the database
+    networks:
+      - api-network
+
+  postgres-db:
+    build:
+      context: .
+      dockerfile: init_db.Dockerfile
+    container_name: postgres-db
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d api_backend"]
+      interval: 1s
+      timeout: 3s
+      retries: 3
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-api_backend}
+      PG_DATA: /data/postgres
+    restart: always
+    networks:
+      - api-network
+
+  initalize-db:
+    image: postgres:latest
+    container_name: initalize-db
+    command: psql -h postgres-db -U postgres -d api_backend -c "COPY analytics(date,channel,country,os,impressions,clicks,installs,spend,revenue) FROM '/data.txt' DELIMITER ',' CSV HEADER;"
+    volumes:
+      - ./data.txt:/data.txt
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-api_backend}
+      PGPASSWORD: postgres
+    depends_on:
+      api:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - api-network
+
+networks:
+  api-network:
+    driver: bridge

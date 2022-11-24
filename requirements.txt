@@ -1,0 +1,5 @@
+fastapi[all]==0.70.1
+alembic==1.7.5
+python-decouple==3.5
+pathlib==1.0.1
+psycopg2-binary==2.9.2
