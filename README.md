@@ -92,6 +92,8 @@ Mandale a cualquier libreria third-party que haga el desarrollo mas piola vago.
 docker-compose up
 ```
 
+Luego para ejecutar las querys hay que dirigirse a la url `http://0.0.0.0:8000/docs` y hacer click en el boton `Try it out`.
+
 ### Bibliotecas utilizadas
 
 #### FastAPI
